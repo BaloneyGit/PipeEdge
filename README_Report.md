@@ -3,9 +3,9 @@ Made changes in the code to make sure the base version ran on my machine (Can re
 
 ## Base Model outputs:
 
-![Base Model Output Image 1](PipeEdge/base_model_output1.png)
+![Base Model Output Image 1](base_model_output1.png)
 
-![Base Model Output Image 2](PipeEdge/base_model_output2.png)
+![Base Model Output Image 2](base_model_output2.png)
 
 
 # Chosen Task: TASK 1 - Quantization
@@ -34,7 +34,7 @@ Made changes in the code to make sure the base version ran on my machine (Can re
  - tensor_encode_outerdim()
 
 
-![Adaptive Quantization Algorithm](PipeEdge/adaptiv_quant_algo.png)
+![Adaptive Quantization Algorithm](adaptiv_quant_algo.png)
 
 ## Explanations:
 1. exp_bias : is analogous to the scaling factor used in integer quantization.
