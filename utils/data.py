@@ -4,6 +4,8 @@ from typing import Callable, Optional, Sequence, Tuple, Union
 import torch
 from torch.utils.data import Dataset, Subset
 from torchvision.transforms import ToTensor, Normalize, Resize, Compose
+from PIL import Image
+import numpy as np
 
 
 class ViTFeatureExtractorTransforms:
@@ -11,7 +13,11 @@ class ViTFeatureExtractorTransforms:
         transform = []
 
         if feature_extractor.do_resize:
-            transform.append(Resize([feature_extractor.size, feature_extractor.size]))
+            print(f"Before resize: {feature_extractor.size}, with type: {type(feature_extractor.size)}")
+            print(f"Height: {feature_extractor.size['height']}, with type: {type(feature_extractor.size['height'])}, Width: {feature_extractor.size['height']}, with type: {type(feature_extractor.size['width'])}")
+            print(f"After resizing: {Resize((feature_extractor.size['height'], feature_extractor.size['width']))}")
+            # print(f"After resize: {Resize(tuple(int(feature_extractor.size['height']), int(feature_extractor.size['width'])))}")  
+            transform.append(Resize((feature_extractor.size['height'], feature_extractor.size['width'])))
 
         transform.append(ToTensor())
 
@@ -20,8 +26,21 @@ class ViTFeatureExtractorTransforms:
 
         self.transform = Compose(transform)
 
+    # def __call__(self, x):
+    #     print(self.transform(x))
+    #     return self.transform(x)
+
     def __call__(self, x):
-        return self.transform(x)
+    # Check if x is a PIL Image
+        
+        if not isinstance(x, Image.Image):
+            # Check if x is a numpy array
+            if not isinstance(x, np.ndarray):
+                raise TypeError(f"Expected input to be a PIL.Image.Image or a numpy.ndarray, but got {type(x)} instead.")
+    
+        # Proceed with the transformation if checks pass
+        transformed_x = self.transform(x)
+        return transformed_x
 
 class RolloverTensorDataset(Dataset[Tuple[torch.Tensor, ...]]):
     """Like `TensorDataset`, but rolls over when the requested length exceeds the actual length."""
