@@ -25,7 +25,7 @@ Made changes in the code to make sure the base version ran on my machine (Can re
  - _intmap_encode() : unsure of what this function is doing
 - Wrote new functions for implementing the AdaptivFloat Quantization algorithm. Made the following progress:
  - get_exp_max() : computes the exp_max in AdaptivFloat Quant Algorithm - assumptions: input_data is floating point weights matrix
- - get_exp_bias() : computes the exp_bias, val_min and val_max (more on all below) {w_sign computed for use possibly later on} - assumptions: input_data is floating point weights matrix
+ - get_quantized() : computes final AdaptivFloat quantized bit - assumptions: input_data is floating point weights matrix
 - No modifications needed possibly in following functions:
  - clamp_banner2019_laplace()
  - clamp_banner2019_gelu()
