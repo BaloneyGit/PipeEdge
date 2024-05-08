@@ -65,54 +65,69 @@ def get_exp_max(w_fp): ## TODO: need to compute per layer granularity normalized
     exp_max = math.log(torch.max(w_abs) - 2)
     assert exp_max > math.log(torch.max(w_abs) - 2) - 1
 
-    return exp_max
-
+    return exp_max, w_abs
 
 ### AdaptFloat implementation
-def get_exp_bias(bits_mat, w_fp, e_mat): # TODO: need to compute per layer granularity exp_bias
+def get_exp_bias(bits, w_fp, e): # TODO: need to compute per layer granularity exp_bias
     """returns exp_bias (the scaling factor for AdaptivFloat),
         val_max (matrix of new max value for datapt),
         val_min (matrix of new min value for datapt)
     params:
-    bits_mat : matrix of number of bits of all datapts
-    e_mat : matrix of exponenents of all datapts
+    bits : number of bits
+    exp :  number of exponenents
     w_fp : full floating point weight matrix 
     """
-    exp_max = get_exp_max(w_fp)
+    exp_max, w_abs = get_exp_max(w_fp)
 
-    # mantissa matrix
-    m_mat = []
-    for i, j in bits_mat, e_mat:
-        m = bits_mat[i] - e_mat[j] - 1
-        m_mat.append(m)
-    m_mat = torch.tensor(m_mat)
+    # # mantissa matrix
+    # m_mat = []
+    # for i, j in bits_mat, e_mat:
+    #     m = bits_mat[i] - e_mat[j] - 1
+    #     m_mat.append(m)
+    # m_mat = torch.tensor(m_mat)
 
-    sign = 0
-    w_sign = []
-    for i in range(w_fp.shape(0)):
-        ## TODO: iterate through the multi-dimensional tensor to pick each datapt, consider here
-        ## that each datapt is 'i'
-        sign = 1 if i * (bits_mat[i] - 1) == 0 else -1
-        w_sign.append(sign)
-    w_sign = torch.tensor(w_sign)
-    
-    # matrix of minimum values
-    val_min_mat = []
-    for i in range(m_mat.shape(0)):
-        val_min = 2**exp_bias * (1 + 2**(-m))
-        val_min_mat.append(val_min)
-    val_min_mat = torch.tensor(val_min_mat)
+    # number of mantissa bits
+    mants = bits - e - 1
 
-    # matrix of maximum values
-    val_max_mat = []
-    for i in range(m_mat.shape(0)):
-        val_max = 2**exp_bias * (2 - 2**(-m))
-        val_max_mat.append(val_max)
-    val_max_mat = torch.tensor(val_max_mat)
+    w_sign = torch.sign(w_fp)
 
+    # exp_bias computation
     exp_bias = exp_max - (2**math.e - 1)
+    
+    # # matrix of minimum values
+    # val_min_mat = []
+    # for i in range(m_mat.shape(0)):
+    #     val_min = 2**exp_bias * (1 + 2**(-m))
+    #     val_min_mat.append(val_min)
+    # val_min_mat = torch.tensor(val_min_mat)\
 
-    return exp_bias, val_min_mat, val_max_mat
+    val_min = 2**exp_bias * (1 + (1/2**mants))
+
+    val_max = 2**exp_max * (2 - (1/2**mants))
+
+    # # matrix of maximum values
+    # val_max_mat = []
+    # for i in range(m_mat.shape(0)):
+    #     val_max = 2**exp_bias * (2 - 2**(-m))
+    #     val_max_mat.append(val_max)
+    # val_max_mat = torch.tensor(val_max_mat)
+
+    # rounding and clamping
+    w_abs_clamped = torch.clamp(w_abs, min=val_min, max=val_max)
+
+    # matrices of exponents
+    w_exp = np.floor(np.log2(w_abs_clamped))
+
+    # matrix of mantissas
+    w_mant = w_abs_clamped / (2 ** w_exp)
+
+    # quantized and scaled
+    w_q = w_mant * (1/2**mants)
+
+    # final output matrix
+    w_adptv = w_sign * 2**(w_exp) * w_q
+
+    return w_adptv, val_min, val_max
 
 def _intmap_encode(int_map, bitwidth):
     """ compress the converted int_map to tesnor with fewer numbers"""
