@@ -38,8 +38,8 @@ Made changes in the code to make sure the base version ran on my machine (Can re
 
 ## Explanations:
 1. exp_bias : is analogous to the scaling factor used in integer quantization.
-2. val_min_mat : minimum values matrix the AdaptivFloat number can take post-quantization
-3. val_max_mat : maximum values matrix the AdaptivFloat number can take post-quantization
+2. val_min : minimum values matrix the AdaptivFloat number can take post-quantization
+3. val_max : maximum values matrix the AdaptivFloat number can take post-quantization
 
 
 
