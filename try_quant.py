@@ -52,7 +52,7 @@ def _quant_op(input_data, bit, mode='original'): ## TODO; create for new quant o
 
 
 ### AdaptFloat implementation
-def get_exp_max(w_fp): ## TODO: need to compute per layer granularity normalized exp_max 
+def get_quantized(w_fp): ## TODO: need to compute per layer granularity normalized exp_max 
                    ## considering given constraint in paper
     """returns normalized exp_max for max(w_abs)"""
 
