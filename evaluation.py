@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 from transformers import DeiTFeatureExtractor, ViTFeatureExtractor
 from runtime import forward_hook_quant_encode, forward_pre_hook_quant_decode
+from try_quant import adptvflt_forward_hook_quant_encode, adptvflt_forward_pre_hook_quant_decode
 from utils.data import ViTFeatureExtractorTransforms
 import model_cfg
 from evaluation_tools.evaluation_quant_test import *
@@ -52,7 +53,7 @@ def _forward_model(input_tensor, model_shards):
 
         # decoder
         if idx != 0:
-            temp_tensor = forward_pre_hook_quant_decode(shard, temp_tensor)
+            temp_tensor = adptvflt_forward_pre_hook_quant_decode(shard, temp_tensor)
 
         # forward
         if isinstance(temp_tensor[0], tuple) and len(temp_tensor[0]) == 2:
@@ -63,7 +64,7 @@ def _forward_model(input_tensor, model_shards):
 
         # encoder
         if idx != num_shards-1:
-            temp_tensor = (forward_hook_quant_encode(shard, None, temp_tensor),)
+            temp_tensor = (adptvflt_forward_hook_quant_encode(shard, None, temp_tensor),)
     return temp_tensor
 
 def evaluation(args):
